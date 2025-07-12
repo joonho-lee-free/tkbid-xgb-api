@@ -1,19 +1,17 @@
-# 파일 위치: backend/main.py
-
 from fastapi import FastAPI
-from models.xgboost_api import router as predict_router
 from fastapi.middleware.cors import CORSMiddleware
+from models.xgboost_api import router as xgb_router
 
 app = FastAPI()
 
-# CORS 설정
+# ✅ CORS 허용 설정 – 정확한 origin만 명시
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://tkbid.vercel.app"],  # ← 정확한 프론트 도메인 명시
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 예측 라우터 연결
-app.include_router(predict_router)
+# ✅ XGBoost 예측 API 라우터 등록
+app.include_router(xgb_router)
