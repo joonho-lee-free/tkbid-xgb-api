@@ -24,7 +24,7 @@ async def predict_xgb(request: PredictRequest):
         if df.empty:
             return {"error": "예측 가능한 데이터가 없습니다."}
 
-        # ✅ 피처 계산 (프론트에서 안 보내는 항목들)
+        # ✅ 서버 측 피처 계산
         df['평균낙찰차이'] = df['평균낙찰가기초가'] - df['낙찰가/기초가']
         df['3회낙찰차이'] = df['평균3회낙찰가기초가'] - df['낙찰가/기초가']
         df['6회낙찰차이'] = df['평균6회낙찰가기초가'] - df['낙찰가/기초가']
@@ -37,10 +37,6 @@ async def predict_xgb(request: PredictRequest):
             '평균낙찰차이', '3회낙찰차이', '6회낙찰차이', 'winner'
         ]
 
-        # ✅ 디버깅 로그
-        print("🟢 마지막 3행 확인:\n", df.tail(3)[feature_cols].to_dict())
-        print("🟢 feature_cols 존재 여부:", all(col in df.columns for col in feature_cols))
-
         X = df[feature_cols]
         y = df['target']
 
@@ -48,8 +44,6 @@ async def predict_xgb(request: PredictRequest):
         model.fit(X, y)
 
         last_row = df.iloc[[-1]][feature_cols]
-        print("🟢 예측용 마지막 행:\n", last_row.to_dict())
-
         predicted_ratio = model.predict(last_row)[0]
         base_price = df.iloc[-1]['기초가격']
         predicted_bid_price = round(base_price * predicted_ratio)
